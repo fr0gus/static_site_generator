@@ -297,7 +297,7 @@ def text_to_textnodes(text):
 
     return nodes
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, base_path):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     if not os.path.exists(from_path):
@@ -318,22 +318,23 @@ def generate_page(from_path, template_path, dest_path):
     html_node = markdown_to_html_node(markdown)
     html_content = html_node.to_html()
     html = template.replace("{{ Title }}", f"{title}").replace("{{ Content }}", f"{html_content}")
+    html = html.replace('href="/', f'href={base_path}')
 
     with open(dest_path, "w") as html_file:
         html_file.write(html)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, base_path):
     items = os.listdir(dir_path_content)
 
     for item in items:
         item_path = os.path.join(dir_path_content, item)
         if os.path.isfile(item_path) and item_path.endswith(".md"):
             dest_path = os.path.join(dest_dir_path, item.replace(".md", ".html"))
-            generate_page(item_path, template_path, dest_path)
+            generate_page(item_path, template_path, dest_path, base_path)
         elif os.path.isdir(item_path):
             new_dir_path = os.path.join(dest_dir_path, item)
             os.mkdir(new_dir_path)
-            generate_pages_recursive(item_path, template_path, new_dir_path)
+            generate_pages_recursive(item_path, template_path, new_dir_path, base_path)
         else:
             raise Exception("Invalid item")
 
