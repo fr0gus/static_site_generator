@@ -5,7 +5,7 @@ from markdown_blocks import (
     split_nodes_images,
     text_to_textnodes,
 )
-from markdown_blocks import markdown_to_blocks, markdown_to_html_node
+from markdown_blocks import markdown_to_blocks, markdown_to_html_node, extract_title
 from textnode import TextNode, TextType
 
 
@@ -288,3 +288,24 @@ if x > 0:
 if x > 0:
 </code></pre><h3>Followed by a ulist:</h3><ul><li>item1</li><li>item2</li><li>item3</li></ul><h3>Followed by an olist:</h3><ol><li>item 1</li><li>item 2</li><li>item 3</li></ol></div>"""
         self.assertEqual(html, expected)
+
+    def test_extract_title_1(self):
+        markdown = "   # Header 1"
+        result = extract_title(markdown)
+        self.assertEqual(result, "Header 1")
+
+    def test_extract_title_2(self):
+        markdown = """
+
+# Header 1
+"""
+        result = extract_title(markdown)
+        self.assertEqual(result, "Header 1")
+
+    def test_extract_title_3(self):
+        markdown = """
+This is some normal p and some *bolded*
+# Header 1
+"""
+        result = extract_title(markdown)
+        self.assertEqual(result, "Header 1")

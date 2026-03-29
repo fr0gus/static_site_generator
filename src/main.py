@@ -1,40 +1,21 @@
-from htmlnode import ParentNode
-from textnode import TextNode, TextType, text_node_to_html_node
-from markdown_blocks import (
-    markdown_to_blocks,
-    block_to_blocktype,
-    text_to_textnodes,
-    markdown_to_html_node,
-    BlockType,
-)
+import os
+import shutil
+from copy_static import copy_recursive
+from markdown_blocks import generate_page, generate_pages_recursive
+
+dir_path_static = "./static"
+dir_path_public = "./public"
+dir_path_content = "./content"
+template_path = "./template.html"
 
 
 def main():
-    markdown = """
-### This is a headern
+    print("Deleting public directory...")
+    if os.path.exists(dir_path_public):
+        shutil.rmtree(dir_path_public)
 
- Followed up by **bold** and _italic_ text
-
-```
- some **text** should be unaffected
-if x > 0:
-```
-
-### Followed by a ulist:
-
-- item1
-- item2
-- item3
-
-### Followed by an olist:
-
-1. item 1
-2. item 2
-3. item 3
-"""
-    newNode = TextNode("Me gusta", TextType.BOLD, "https://www.boot.dev")
-
-    print(markdown_to_html_node(markdown))
+    copy_recursive(dir_path_static, dir_path_public)
+    generate_pages_recursive(dir_path_content, template_path, dir_path_public)
 
 
 if __name__ == "__main__":

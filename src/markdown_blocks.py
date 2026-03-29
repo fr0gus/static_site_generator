@@ -2,6 +2,7 @@ from enum import Enum
 from textnode import text_node_to_html_node, TextNode, TextType
 from regex_extract import extract_markdown_images, extract_markdown_links
 from htmlnode import ParentNode
+import os
 
 
 class BlockType(Enum):
@@ -273,6 +274,16 @@ def markdown_to_html_node(markdown):
     return ParentNode("div", html_children)
 
 
+def extract_title(markdown):
+    lines = markdown.split("\n")
+
+    for line in lines:
+        line = line.strip()
+        if line.startswith("# "):
+            return line.replace("# ", "")
+    
+    raise Exception("No header found")
+ 
 
 def text_to_textnodes(text):
     node = TextNode(text, TextType.TEXT)
@@ -285,3 +296,49 @@ def text_to_textnodes(text):
     nodes = split_nodes_images(nodes)
 
     return nodes
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+
+    if not os.path.exists(from_path):
+        raise FileNotFoundError("Markdown file not found")
+
+    if not os.path.exists(template_path):
+        raise FileNotFoundError("Template file not found")
+
+    markdown = ""
+    with open(from_path, 'r') as md_file:
+        markdown = md_file.read()
+        
+    template = ""
+    with open(template_path, 'r') as template_file:
+        template = template_file.read()
+     
+    title = extract_title(markdown)
+    html_node = markdown_to_html_node(markdown)
+    html_content = html_node.to_html()
+    html = template.replace("{{ Title }}", f"{title}").replace("{{ Content }}", f"{html_content}")
+
+    with open(dest_path, "w") as html_file:
+        html_file.write(html)
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    items = os.listdir(dir_path_content)
+
+    for item in items:
+        item_path = os.path.join(dir_path_content, item)
+        if os.path.isfile(item_path) and item_path.endswith(".md"):
+            dest_path = os.path.join(dest_dir_path, item.replace(".md", ".html"))
+            generate_page(item_path, template_path, dest_path)
+        elif os.path.isdir(item_path):
+            new_dir_path = os.path.join(dest_dir_path, item)
+            os.mkdir(new_dir_path)
+            generate_pages_recursive(item_path, template_path, new_dir_path)
+        else:
+            raise Exception("Invalid item")
+
+
+
+
+
+
