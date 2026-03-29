@@ -317,11 +317,13 @@ def generate_page(from_path, template_path, dest_path, base_path):
     title = extract_title(markdown)
     html_node = markdown_to_html_node(markdown)
     html_content = html_node.to_html()
-    html = template.replace("{{ Title }}", f"{title}").replace("{{ Content }}", f"{html_content}")
-    html = html.replace('href="/', f'href={base_path}')
+    template = template.replace("{{ Title }}", title)
+    template = template.replace("{{ Content }}", html_content)
+    template = template.replace('href="/', 'href="' + base_path)
+    template = template.replace('src="/', 'src="' + base_path)
 
     with open(dest_path, "w") as html_file:
-        html_file.write(html)
+        html_file.write(template)
 
 def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, base_path):
     items = os.listdir(dir_path_content)
